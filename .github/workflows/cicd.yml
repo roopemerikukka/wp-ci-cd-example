@@ -1,0 +1,50 @@
+name: 'CI / CD pipeline example'
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install deps
+        run: npm install
+
+      - name: Build deps
+        run: npm run build
+
+        # You can also install f.ex. WP plugins with composer here.
+
+      - name: Remove source files
+        run: rm ./themes/rm-theme/assets/src/*.js
+
+      - name: Rsync
+        uses: burnett01/rsync-deployments@5.0
+        with:
+          switches: -avzr --delete --include="themes/***" --include="plugins/***" --exclude="*"
+          remote_path: ~/wp-ci-cd-example/
+          remote_host: ${{ secrets.HOST }}
+          remote_port: ${{ secrets.PORT }}
+          remote_user: ${{ secrets.USERNAME }}
+          remote_key: ${{ secrets.KEY }}
+
+      - name: SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            cd ~/wp-ci-cd-example/
+            tree .

@@ -1,0 +1,14 @@
+# Common
+node_modules
+
+# WP related
+uploads/
+themes/**
+!themes/rm-**
+themes/**/assets/dist/**
+plugins/**
+!plugins/rm-**
+
+# Misc
+.env
+!.gitkeep
